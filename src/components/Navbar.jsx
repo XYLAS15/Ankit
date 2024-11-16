@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NAVIGATION_LINKS, SOCIAL_MEDIA_LINKS } from "../constants";
 import NameLogo from "../assets/NameLogo.png";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showNavbar, setShowNavbar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const handleLinkClick = (e, targetId) => {
     e.preventDefault();
@@ -24,8 +26,37 @@ const Navbar = () => {
     }
   };
 
+  // Handle scroll direction to show/hide navbar (only for small screens)
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        // Scrolling down
+        setShowNavbar(false);
+      } else {
+        // Scrolling up
+        setShowNavbar(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    // Only add scroll event for smaller screens
+    const mediaQuery = window.matchMedia("(max-width: 1023px)"); // lg breakpoint
+    if (mediaQuery.matches) {
+      window.addEventListener("scroll", handleScroll);
+    }
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-sm">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
+        showNavbar ? "translate-y-0" : "-translate-y-full"
+      } lg:translate-y-0`}
+    >
       {/* Desktop Navbar */}
       <div className="hidden lg:flex items-center justify-between mx-auto max-w-6xl px-4 py-4">
         <a href="#home" onClick={(e) => handleLinkClick(e, "#home")}>
